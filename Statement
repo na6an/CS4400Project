@@ -1,0 +1,146 @@
+# SQL STATEMENTS
+
+# TASK 1: Login
+SELECT Usertype
+FROM USER AS U
+WHERE 	U.GtID = <value1> AND
+		U.Password = <value2>;
+
+# Note: <value1> and <value2> represent input values of gtID and password.
+
+
+# TASK 2: View Room Utilization
+CREATE VIEW 	View Room Utilization For
+AS 	SELECT Building number, Building name, Room number, 
+		 COUNT(SlotID)*0.5 AS Used Hours
+	FROM    MEETING
+	WHERE Year_Month_Day>= CURDATE()
+	GROUP BY Building number, Room number;
+
+
+# TASK 3a: List Associations
+CREATE VIEW 	View GT Student associations
+AS 	SELECT *
+	FROM    GT STUDENT ASSOCIATION;
+
+
+# TASK 3b: Add Association
+INSERT INTO GT STUDENT ASSOCIATION (Assoc ID, Name, Dues, Advisor ID, Description)
+VALUES (A,B,C,D,E);
+
+CREATE ASSERTION ADVISOR_CONSTRAINT
+CHECK (SELECT COUNT(*)
+		FROM GT STUDENT ASSOCIATION
+		WHERE Advisor ID = D
+			Name = B) =1;
+
+# Note: A,B,C,D,E represent input values corresponding to Assoc ID, Name, Dues, Advisor ID, Description
+
+
+# TASK 3c: Remove Association
+DELETE FROM View GT Student Association 
+WHERE  Assoc ID = A 
+Year_Month_Day >= CURDATE()
+CASCADE ON DELETE;
+
+# Note: A represent the association ID to remove.
+
+
+# TASK 4: List Associations
+CREATE VIEW 	View GT Student associations
+AS 	SELECT Assoc ID, Name, Description, Dues, COUNT(gtID) AS #Members
+	FROM    GT STUDENT ASSOCIATION AS A, JOIN ASSOCIATION AS J
+	WHERE AdvisorID = <value1>  (from Task1) AND
+		 A.Assoc ID = J.Assoc ID
+	GROUP BY Assoc ID
+	ORDER BY Assoc ID;
+
+
+# TASK 5a: List Members
+CREATE VIEW List Members
+AS 	SELECT GtID, Name, Position
+	FROM    JOIN ASSOCIATION AS J, USER AS U
+	WHERE J.GtID=U.GtID AND J.Assoc ID=A
+	ORDER BY U.GtID;
+
+# Note: A represents the selected association ID.
+
+
+# TASK 5b: Add Member
+INSERT JOIN ASSOCIATION (GtID, Position, ID)
+VALUES (A,B,C)
+
+CREATE ASSERTION GtID_CONSTRAINT
+CHECK(EXISTS(SELECT GtID
+		FROM USER
+		WHERE GtID = A));
+
+# Note: A represents the ID of a student who's joining the association.
+
+
+# TASK 5c: Remove Member
+DELETE FROM JOIN ASSOCIATION 
+WHERE  GtID = A AND Assoc ID = B AND Position = C;
+
+# Note: A, B, C represent the ID of a student who's removed from the association, ID of the association the student is removed from and the position the student had in the association respectively.
+
+
+# TASK 6a: List Available Rooms
+CREATE VIEW List Available Rooms
+AS 	SELECT Building number, Building Name, Room number, From, To
+	FROM MEETING AS M, BUILDING AS B, JOIN ASSOCIATION AS J, TIME SLOT AS T
+	WHERE M.Assoc ID = A AND
+		M.Year_Month_Day = B AND
+		J.GtID = C AND
+		J.Assoc ID = D AND
+		J.Position < 4 AND
+		M.Room number  = B.Room number AND
+		M.SlotID = T.SlotID AND
+		M.Assoc ID = J.Assoc ID;
+
+CREATE ASSERTION Date_Constraint
+CHECK (Year_Month_Day<=CURDATE());
+
+
+# TASK 6b: Reserve
+UPDATE MEETING SET <column_name> = A AND .... AND <column_name> = Z WHERE <column_name> <condition> AND ... AND <column_name> <condition>
+
+CREATE ASSERTION POSITION_CONSTRAINT
+CHECK(EXISTS(SELECT *
+		FROM JOIN ASSOCIATION
+		WHERE Position<4 AND
+			 gtID = <value1>));
+
+# Note: A...Z represent whatever the number of columns and names of each columns under each <condition> of columns. 
+
+
+# TASK 6c: Cancel Reservation
+DELETE FROM MEETING
+WHERE Building number = A AND
+	 Year_Month_Day = B AND
+	 Room number = C AND
+	 SlotID = D;
+
+CREATE ASSERTION POSITION_CONSTRAINT
+CHECK (EXISTS (SELECT *
+		FROM JOIN ASSOCIATION
+		WHERE Position<4 AND
+			 gtID = <value1>));
+
+# Note: A, B, C, D represent the building number, date, room number and time slot to be canceled from reservation list.
+
+
+# TASK 7: View Upcoming Meetings
+CREATE VIEW View Upcoming Meetings
+AS 	SELECT Association name, Building name, Room number, Year, Month, Day, 		  From, To, Position
+FROM    MEETING AS M, JOIN ASSOCIATION AS J, BUILDING AS B, GT STUDENT 
+		 ASSOCIATION AS G, TIME SLOT AS T
+	WHERE B.Room number = M.Room number AND
+		M.Assoc ID = G.Assoc ID AND
+		J.GtID = A AND 
+		J.Assoc ID = M.Assoc ID AND
+		M.SlotID = T.SlotID
+	GROUP BY Association name
+	ORDER BY Year, Month, Day;
+
+# Note: A represents the gtID of the viewer.

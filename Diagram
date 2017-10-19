@@ -1,0 +1,28 @@
+# Relational Schema Diagram
+
+USER
+GtID | Password | Name | Usertype
+
+
+JOIN ASSOCIATION
+GtID | Position | Assoc ID
+
+
+GT STUDENT ASSOCIATION
+Assoc ID | Name | Dues | Advisor ID | Description
+
+
+BUILDING
+Building Number | Building Name
+
+
+ROOM
+Building Number | Room number
+
+
+MEETING
+Building Number | Room number | SlotID | Year_Month_Day | Assoc ID
+
+
+TIME SLOT
+SlotID | From | To
